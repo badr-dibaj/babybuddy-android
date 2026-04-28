@@ -1,0 +1,48 @@
+# ─── Android Cross-Compilation Configuration ─────────────────────────────────
+#
+# Prerequisites:
+#   1. Install Android NDK r25+ (or latest LTS)
+#   2. Set ANDROID_NDK_HOME in your environment, e.g.:
+#        export ANDROID_NDK_HOME=$HOME/Android/Sdk/ndk/25.2.9519653
+#   3. Install Rust Android targets:
+#        rustup target add aarch64-linux-android
+#        rustup target add armv7-linux-androideabi
+#        rustup target add x86_64-linux-android
+#        rustup target add i686-linux-android
+#
+# The NDK toolchain version below (33) maps to Android API 33 (Android 13).
+# Adjust the number to match your installed NDK's min API.
+#
+# On macOS the toolchain suffix is "-darwin-x86_64" (or arm64 for Apple Silicon).
+# On Linux it is "-linux-x86_64". Update accordingly.
+
+[target.aarch64-linux-android]
+ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang"
+
+[target.armv7-linux-androideabi]
+ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi29-clang"
+
+[target.x86_64-linux-android]
+ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android29-clang"
+
+[target.i686-linux-android]
+ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android29-clang"
+
+# ─── macOS variant (Apple Silicon host) ──────────────────────────────────────
+# Uncomment these and comment the linux-x86_64 blocks above when building on macOS M1/M2.
+#
+# [target.aarch64-linux-android]
+# ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+# linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android29-clang"
+#
+# [target.armv7-linux-androideabi]
+# ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+# linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin/armv7a-linux-androideabi29-clang"
+#
+# [target.x86_64-linux-android]
+# ar     = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin/llvm-ar"
+# linker = "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64/bin/x86_64-linux-android29-clang"

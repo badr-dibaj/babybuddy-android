@@ -1,0 +1,2089 @@
+// BabyBuddy — main UI
+// Material You inspired pastel design system
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+global Theme {
+    // Primary palette — Rose poudré
+    out property <color> primary:            #E8A0BF;
+    out property <color> primary-container:  #FCE4EC;
+    out property <color> on-primary:         #FFFFFF;
+
+    // Secondary — Bleu ciel
+    out property <color> secondary:          #89CFF0;
+    out property <color> secondary-container:#E3F2FD;
+    out property <color> on-secondary:       #FFFFFF;
+
+    // Tertiary — Vert menthe
+    out property <color> tertiary:           #80CBC4;
+    out property <color> tertiary-container: #E0F2F1;
+    out property <color> on-tertiary:        #FFFFFF;
+
+    // Neutral
+    out property <color> surface:            #FFFBFE;
+    out property <color> surface-variant:    #F8F0F5;
+    out property <color> on-surface:         #1C1B1F;
+    out property <color> on-surface-variant: #49454F;
+    out property <color> outline:            #CAC4D0;
+    out property <color> outline-variant:    #E7E0EC;
+
+    // Error
+    out property <color> error:              #F28B82;
+    out property <color> error-container:    #FCE8E6;
+
+    // Background
+    out property <color> background:         #FFFBFE;
+    out property <color> on-background:      #1C1B1F;
+
+    // Card / elevation
+    out property <color> card:               #FFFFFF;
+    out property <color> card-shadow:        #00000014;
+
+    // Status colors
+    out property <color> color-feeding:      #F48FB1;
+    out property <color> color-diaper:       #90CAF9;
+    out property <color> color-growth:       #A5D6A7;
+    out property <color> color-medication:   #CE93D8;
+    out property <color> color-teeth:        #FFF59D;
+
+    // Typography scale (font sizes)
+    out property <length> display:   57px;
+    out property <length> headline-l: 32px;
+    out property <length> headline-m: 28px;
+    out property <length> headline-s: 24px;
+    out property <length> title-l:   22px;
+    out property <length> title-m:   16px;
+    out property <length> title-s:   14px;
+    out property <length> body-l:    16px;
+    out property <length> body-m:    14px;
+    out property <length> body-s:    12px;
+    out property <length> label-l:   14px;
+    out property <length> label-m:   12px;
+    out property <length> label-s:   11px;
+
+    // Spacing
+    out property <length> space-xs:  4px;
+    out property <length> space-s:   8px;
+    out property <length> space-m:  16px;
+    out property <length> space-l:  24px;
+    out property <length> space-xl: 32px;
+
+    // Border radii
+    out property <length> radius-s:   8px;
+    out property <length> radius-m:  12px;
+    out property <length> radius-l:  16px;
+    out property <length> radius-xl: 28px;
+    out property <length> radius-full: 100px;
+}
+
+// ─── Shared data structures (Slint structs) ──────────────────────────────────
+
+struct BabyData {
+    id: string,
+    name: string,
+    birth-date: string,
+    age-display: string,
+    photo-path: string,
+}
+
+struct FeedingData {
+    id: string,
+    baby-id: string,
+    time-display: string,
+    method-display: string,
+    method-icon: string,
+    duration-display: string,
+    amount: float,
+    notes: string,
+}
+
+struct DiaperData {
+    id: string,
+    baby-id: string,
+    time-display: string,
+    type-display: string,
+    icon: string,
+    color: string,
+    notes: string,
+}
+
+struct WeightData {
+    id: string,
+    date-display: string,
+    value: float,
+    value-display: string,
+}
+
+struct HeightData {
+    id: string,
+    date-display: string,
+    value: float,
+    value-display: string,
+}
+
+struct HeadCircumferenceData {
+    id: string,
+    date-display: string,
+    value: float,
+    value-display: string,
+}
+
+struct ToothData {
+    id: string,
+    date-display: string,
+    tooth-id: int,
+    name: string,
+}
+
+struct MedicationData {
+    id: string,
+    time-display: string,
+    name: string,
+    dosage-display: string,
+    notes: string,
+}
+
+struct SummaryData {
+    feedings-today: int,
+    diapers-today: int,
+    last-feeding: string,
+    last-diaper: string,
+    latest-weight: string,
+    latest-height: string,
+}
+
+// ─── Reusable Components ──────────────────────────────────────────────────────
+
+component Card inherits Rectangle {
+    in property <color> card-color: Theme.card;
+    in property <length> card-padding: Theme.space-m;
+
+    background: card-color;
+    border-radius: Theme.radius-l;
+    drop-shadow-blur: 8px;
+    drop-shadow-offset-x: 0px;
+    drop-shadow-offset-y: 2px;
+    drop-shadow-color: Theme.card-shadow;
+
+    @children
+}
+
+component Chip inherits Rectangle {
+    in property <string> text: "";
+    in property <color> chip-color: Theme.primary-container;
+    in property <color> text-color: Theme.on-surface;
+
+    height: 32px;
+    background: chip-color;
+    border-radius: Theme.radius-full;
+    padding-left: Theme.space-m;
+    padding-right: Theme.space-m;
+
+    Text {
+        text: root.text;
+        font-size: Theme.label-l;
+        color: root.text-color;
+        vertical-alignment: center;
+        horizontal-alignment: center;
+    }
+}
+
+component IconButton inherits TouchArea {
+    in property <string> icon-text: "•";
+    in property <color> bg: transparent;
+    in property <color> icon-color: Theme.on-surface;
+    in property <length> size: 48px;
+
+    width: root.size;
+    height: root.size;
+
+    Rectangle {
+        width: root.size;
+        height: root.size;
+        border-radius: root.size / 2;
+        background: root.pressed ? Theme.outline-variant : (root.has-hover ? Theme.surface-variant : root.bg);
+
+        Text {
+            text: root.icon-text;
+            font-size: 20px;
+            color: root.icon-color;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component PrimaryButton inherits TouchArea {
+    in property <string> label: "Button";
+    in property <color> btn-color: Theme.primary;
+    in property <color> label-color: Theme.on-primary;
+    in property <length> btn-height: 52px;
+
+    height: root.btn-height;
+
+    Rectangle {
+        width: 100%;
+        height: root.btn-height;
+        border-radius: Theme.radius-full;
+        background: root.pressed ? root.btn-color.darker(10%) : (root.has-hover ? root.btn-color.darker(5%) : root.btn-color);
+
+        Text {
+            text: root.label;
+            font-size: Theme.label-l;
+            font-weight: 600;
+            color: root.label-color;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component OutlineButton inherits TouchArea {
+    in property <string> label: "Button";
+    in property <color> border-col: Theme.outline;
+    in property <color> label-col: Theme.on-surface;
+    in property <length> btn-height: 48px;
+
+    height: root.btn-height;
+
+    Rectangle {
+        width: 100%;
+        height: root.btn-height;
+        border-radius: Theme.radius-full;
+        border-width: 1.5px;
+        border-color: root.border-col;
+        background: root.pressed ? Theme.surface-variant : transparent;
+
+        Text {
+            text: root.label;
+            font-size: Theme.label-l;
+            font-weight: 500;
+            color: root.label-col;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+// FAB — Floating Action Button
+component FAB inherits TouchArea {
+    in property <string> icon: "+";
+    in property <color> fab-color: Theme.primary;
+    in property <color> fab-icon-color: Theme.on-primary;
+
+    width: 64px;
+    height: 64px;
+
+    Rectangle {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: root.pressed ? root.fab-color.darker(15%) : (root.has-hover ? root.fab-color.darker(8%) : root.fab-color);
+        drop-shadow-blur: 12px;
+        drop-shadow-offset-x: 0px;
+        drop-shadow-offset-y: 4px;
+        drop-shadow-color: root.fab-color.with-alpha(0.4);
+
+        Text {
+            text: root.icon;
+            font-size: 28px;
+            color: root.fab-icon-color;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+// TextField component
+component TextField inherits Rectangle {
+    in-out property <string> value: "";
+    in property <string> placeholder: "";
+    in property <string> label: "";
+    in property <bool> enabled: true;
+
+    callback accepted(string);
+    callback edited(string);
+
+    height: 72px;
+    background: transparent;
+
+    VerticalLayout {
+        spacing: 4px;
+
+        if root.label != "" : Text {
+            text: root.label;
+            font-size: Theme.label-m;
+            color: Theme.on-surface-variant;
+        }
+
+        Rectangle {
+            height: 56px;
+            border-radius: Theme.radius-s;
+            border-width: 1.5px;
+            border-color: input.has-focus ? Theme.primary : Theme.outline;
+            background: Theme.surface-variant;
+
+            input := TextInput {
+                x: Theme.space-m;
+                width: parent.width - 2 * Theme.space-m;
+                height: parent.height;
+                text: root.value;
+                font-size: Theme.body-l;
+                color: Theme.on-surface;
+                enabled: root.enabled;
+                vertical-alignment: center;
+                placeholder-color: Theme.on-surface-variant;
+
+                accepted => { root.accepted(self.text); }
+                edited => { root.value = self.text; root.edited(self.text); }
+            }
+
+            if root.value == "" && !input.has-focus : Text {
+                x: Theme.space-m;
+                width: parent.width - 2 * Theme.space-m;
+                height: parent.height;
+                text: root.placeholder;
+                font-size: Theme.body-l;
+                color: Theme.on-surface-variant.with-alpha(0.6);
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
+// ─── Bottom Navigation Bar ────────────────────────────────────────────────────
+
+component BottomNavItem inherits TouchArea {
+    in property <string> icon: "●";
+    in property <string> label: "";
+    in property <bool> selected: false;
+
+    width: 80px;
+    height: 72px;
+
+    VerticalLayout {
+        alignment: center;
+        spacing: 4px;
+        padding-top: 8px;
+
+        Rectangle {
+            height: 32px;
+            width: root.selected ? 64px : 32px;
+            border-radius: 16px;
+            background: root.selected ? Theme.primary-container : transparent;
+            animate width { duration: 200ms; easing: ease-in-out; }
+            animate background { duration: 200ms; }
+
+            Text {
+                text: root.icon;
+                font-size: 20px;
+                color: root.selected ? Theme.primary : Theme.on-surface-variant;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                animate color { duration: 200ms; }
+            }
+        }
+
+        Text {
+            text: root.label;
+            font-size: Theme.label-s;
+            font-weight: root.selected ? 700 : 400;
+            color: root.selected ? Theme.primary : Theme.on-surface-variant;
+            horizontal-alignment: center;
+            animate color { duration: 200ms; }
+        }
+    }
+}
+
+component BottomNavBar inherits Rectangle {
+    in-out property <int> active-tab: 0;
+
+    callback tab-changed(int);
+
+    height: 80px;
+    background: Theme.card;
+    border-radius: 0;
+    drop-shadow-blur: 8px;
+    drop-shadow-offset-x: 0px;
+    drop-shadow-offset-y: -2px;
+    drop-shadow-color: Theme.card-shadow;
+
+    HorizontalLayout {
+        alignment: space-around;
+        padding-left: Theme.space-s;
+        padding-right: Theme.space-s;
+
+        BottomNavItem {
+            icon: "🏠";
+            label: "Home";
+            selected: root.active-tab == 0;
+            clicked => { root.active-tab = 0; root.tab-changed(0); }
+        }
+
+        BottomNavItem {
+            icon: "🍼";
+            label: "Feeding";
+            selected: root.active-tab == 1;
+            clicked => { root.active-tab = 1; root.tab-changed(1); }
+        }
+
+        BottomNavItem {
+            icon: "🩹";
+            label: "Diapers";
+            selected: root.active-tab == 2;
+            clicked => { root.active-tab = 2; root.tab-changed(2); }
+        }
+
+        BottomNavItem {
+            icon: "📈";
+            label: "Growth";
+            selected: root.active-tab == 3;
+            clicked => { root.active-tab = 3; root.tab-changed(3); }
+        }
+
+        BottomNavItem {
+            icon: "💊";
+            label: "More";
+            selected: root.active-tab == 4;
+            clicked => { root.active-tab = 4; root.tab-changed(4); }
+        }
+    }
+}
+
+// ─── Dialogs / Sheets ─────────────────────────────────────────────────────────
+
+component ModalOverlay inherits Rectangle {
+    in property <bool> show: false;
+    callback close();
+
+    width: 100%;
+    height: 100%;
+    background: show ? #00000066 : transparent;
+    visible: show;
+    animate background { duration: 200ms; }
+
+    TouchArea {
+        width: 100%;
+        height: 100%;
+        clicked => { root.close(); }
+    }
+}
+
+// Add Feeding Sheet
+component AddFeedingSheet inherits Rectangle {
+    in property <bool> show: false;
+    in property <[BabyData]> babies: [];
+
+    callback close();
+    callback save(string, string, string, string, float, string);
+    // baby-id, method, type, duration-min, amount, notes
+
+    out property <string> sel-baby-id: babies.length > 0 ? babies[0].id : "";
+    out property <int> sel-method: 0;  // 0=left,1=right,2=both,3=bottle,4=solid,5=fortified
+    out property <float> duration-val: 0;
+    out property <float> amount-val: 0;
+    out property <string> notes-val: "";
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    visible: show;
+
+    Rectangle {
+        y: parent.height - self.height;
+        width: parent.width;
+        height: 520px;
+        background: Theme.surface;
+        border-radius: Theme.radius-xl;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        clip: true;
+        animate y { duration: 300ms; easing: ease-out; }
+
+        VerticalLayout {
+            padding: Theme.space-l;
+            spacing: Theme.space-m;
+
+            // Handle bar
+            Rectangle {
+                width: 40px;
+                height: 4px;
+                border-radius: 2px;
+                background: Theme.outline;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text: "🍼  Add Feeding";
+                font-size: Theme.title-l;
+                font-weight: 700;
+                color: Theme.on-surface;
+            }
+
+            // Method selector
+            Text {
+                text: "Method";
+                font-size: Theme.label-l;
+                color: Theme.on-surface-variant;
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-s;
+
+                for method[i] in ["Left", "Right", "Both", "Bottle", "Solid"] : TouchArea {
+                    width: 64px;
+                    height: 40px;
+                    clicked => { root.sel-method = i; }
+
+                    Rectangle {
+                        border-radius: Theme.radius-full;
+                        background: root.sel-method == i ? Theme.color-feeding : Theme.surface-variant;
+                        border-width: root.sel-method == i ? 0 : 1px;
+                        border-color: Theme.outline;
+
+                        Text {
+                            text: method;
+                            font-size: Theme.label-s;
+                            font-weight: root.sel-method == i ? 700 : 400;
+                            color: root.sel-method == i ? Theme.on-primary : Theme.on-surface;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+
+                TextField {
+                    width: 50%;
+                    label: "Duration (min)";
+                    placeholder: "e.g. 15";
+                    edited(v) => {
+                        root.duration-val = v.to-float();
+                    }
+                }
+
+                TextField {
+                    width: 50%;
+                    label: "Amount (ml)";
+                    placeholder: "e.g. 120";
+                    edited(v) => {
+                        root.amount-val = v.to-float();
+                    }
+                }
+            }
+
+            TextField {
+                label: "Notes";
+                placeholder: "Optional notes...";
+                edited(v) => { root.notes-val = v; }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+
+                OutlineButton {
+                    label: "Cancel";
+                    clicked => { root.close(); }
+                }
+
+                PrimaryButton {
+                    label: "Save Feeding";
+                    btn-color: Theme.color-feeding;
+                    clicked => {
+                        root.save(
+                            root.sel-baby-id,
+                            ["left breast","right breast","both breasts","bottle","solid food"][root.sel-method],
+                            ["breast milk","breast milk","breast milk","formula","solid food"][root.sel-method],
+                            root.duration-val,
+                            root.amount-val,
+                            root.notes-val
+                        );
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Add Diaper Sheet
+component AddDiaperSheet inherits Rectangle {
+    in property <bool> show: false;
+    in property <[BabyData]> babies: [];
+
+    callback close();
+    callback save(string, bool, bool, string, string, string);
+    // baby-id, wet, solid, color, amount, notes
+
+    out property <string> sel-baby-id: babies.length > 0 ? babies[0].id : "";
+    out property <bool> sel-wet: true;
+    out property <bool> sel-solid: false;
+    out property <int> sel-color: 0;
+    out property <int> sel-amount: 1;
+    out property <string> notes-val: "";
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    visible: show;
+
+    Rectangle {
+        y: parent.height - self.height;
+        width: parent.width;
+        height: 480px;
+        background: Theme.surface;
+        border-radius: Theme.radius-xl;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        clip: true;
+
+        VerticalLayout {
+            padding: Theme.space-l;
+            spacing: Theme.space-m;
+
+            Rectangle {
+                width: 40px; height: 4px;
+                border-radius: 2px;
+                background: Theme.outline;
+                horizontal-alignment: center;
+            }
+
+            Text {
+                text: "🩹  Add Diaper Change";
+                font-size: Theme.title-l;
+                font-weight: 700;
+                color: Theme.on-surface;
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+
+                TouchArea {
+                    width: 140px; height: 48px;
+                    clicked => { root.sel-wet = !root.sel-wet; }
+                    Rectangle {
+                        border-radius: Theme.radius-m;
+                        background: root.sel-wet ? Theme.color-diaper : Theme.surface-variant;
+                        border-width: 1.5px;
+                        border-color: root.sel-wet ? Theme.color-diaper : Theme.outline;
+                        HorizontalLayout {
+                            padding: Theme.space-s; spacing: 6px; alignment: center;
+                            Text { text: "💧"; font-size: 18px; }
+                            Text {
+                                text: "Wet";
+                                font-size: Theme.label-l;
+                                font-weight: root.sel-wet ? 700 : 400;
+                                color: Theme.on-surface;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+
+                TouchArea {
+                    width: 140px; height: 48px;
+                    clicked => { root.sel-solid = !root.sel-solid; }
+                    Rectangle {
+                        border-radius: Theme.radius-m;
+                        background: root.sel-solid ? #FFCC80 : Theme.surface-variant;
+                        border-width: 1.5px;
+                        border-color: root.sel-solid ? #FFCC80 : Theme.outline;
+                        HorizontalLayout {
+                            padding: Theme.space-s; spacing: 6px; alignment: center;
+                            Text { text: "💩"; font-size: 18px; }
+                            Text {
+                                text: "Solid";
+                                font-size: Theme.label-l;
+                                font-weight: root.sel-solid ? 700 : 400;
+                                color: Theme.on-surface;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Text {
+                text: "Color";
+                font-size: Theme.label-l;
+                color: Theme.on-surface-variant;
+            }
+
+            HorizontalLayout {
+                spacing: 6px;
+                for col[i] in ["Yellow","Green","Brown","Black","Orange"] : TouchArea {
+                    width: 60px; height: 32px;
+                    clicked => { root.sel-color = i; }
+                    Rectangle {
+                        border-radius: Theme.radius-full;
+                        background: root.sel-color == i
+                            ? [#FFF59D,#A5D6A7,#BCAAA4,#616161,#FFCC80][i]
+                            : Theme.surface-variant;
+                        border-width: 1.5px;
+                        border-color: root.sel-color == i ? Theme.on-surface-variant : Theme.outline;
+                        Text {
+                            text: col;
+                            font-size: Theme.label-s;
+                            color: Theme.on-surface;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                }
+            }
+
+            TextField {
+                label: "Notes";
+                placeholder: "Optional notes...";
+                edited(v) => { root.notes-val = v; }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+                OutlineButton {
+                    label: "Cancel";
+                    clicked => { root.close(); }
+                }
+                PrimaryButton {
+                    label: "Save Change";
+                    btn-color: Theme.color-diaper;
+                    clicked => {
+                        root.save(
+                            root.sel-baby-id,
+                            root.sel-wet,
+                            root.sel-solid,
+                            ["yellow","green","brown","black","orange"][root.sel-color],
+                            ["small","medium","large"][root.sel-amount],
+                            root.notes-val
+                        );
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Add Measurement Sheet (Weight / Height / Head)
+component AddMeasurementSheet inherits Rectangle {
+    in property <bool> show: false;
+    in property <string> title: "Weight";
+    in property <string> unit: "kg";
+    in property <color> accent: Theme.color-growth;
+
+    callback close();
+    callback save(float, string, string);
+    // value, date-iso, notes
+
+    out property <float> val: 0;
+    out property <string> date-iso: "";
+    out property <string> notes-val: "";
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    visible: show;
+
+    Rectangle {
+        y: parent.height - self.height;
+        width: parent.width;
+        height: 380px;
+        background: Theme.surface;
+        border-radius: Theme.radius-xl;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        clip: true;
+
+        VerticalLayout {
+            padding: Theme.space-l;
+            spacing: Theme.space-m;
+
+            Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; horizontal-alignment: center; }
+
+            Text {
+                text: "📏  Add " + root.title;
+                font-size: Theme.title-l;
+                font-weight: 700;
+                color: Theme.on-surface;
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+
+                TextField {
+                    width: 50%;
+                    label: root.title + " (" + root.unit + ")";
+                    placeholder: "0.0";
+                    edited(v) => { root.val = v.to-float(); }
+                }
+
+                TextField {
+                    width: 50%;
+                    label: "Date (YYYY-MM-DD)";
+                    placeholder: "2024-01-01";
+                    edited(v) => { root.date-iso = v; }
+                }
+            }
+
+            TextField {
+                label: "Notes";
+                placeholder: "Optional...";
+                edited(v) => { root.notes-val = v; }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+                OutlineButton { label: "Cancel"; clicked => { root.close(); } }
+                PrimaryButton {
+                    label: "Save";
+                    btn-color: root.accent;
+                    clicked => {
+                        root.save(root.val, root.date-iso, root.notes-val);
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Add Medication Sheet
+component AddMedicationSheet inherits Rectangle {
+    in property <bool> show: false;
+
+    callback close();
+    callback save(string, float, string, string, string);
+    // name, dosage, unit, time-iso, notes
+
+    out property <string> name-val: "";
+    out property <float> dosage-val: 0;
+    out property <int> sel-unit: 0;
+    out property <string> time-iso: "";
+    out property <string> notes-val: "";
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    visible: show;
+
+    Rectangle {
+        y: parent.height - self.height;
+        width: parent.width;
+        height: 440px;
+        background: Theme.surface;
+        border-radius: Theme.radius-xl;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        clip: true;
+
+        VerticalLayout {
+            padding: Theme.space-l;
+            spacing: Theme.space-m;
+
+            Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; horizontal-alignment: center; }
+
+            Text {
+                text: "💊  Add Medication";
+                font-size: Theme.title-l;
+                font-weight: 700;
+                color: Theme.on-surface;
+            }
+
+            TextField {
+                label: "Medication Name";
+                placeholder: "e.g. Paracetamol";
+                edited(v) => { root.name-val = v; }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+
+                TextField {
+                    width: 50%;
+                    label: "Dosage";
+                    placeholder: "e.g. 2.5";
+                    edited(v) => { root.dosage-val = v.to-float(); }
+                }
+
+                VerticalLayout {
+                    width: 50%;
+                    spacing: 4px;
+                    Text {
+                        text: "Unit";
+                        font-size: Theme.label-m;
+                        color: Theme.on-surface-variant;
+                    }
+                    HorizontalLayout {
+                        spacing: 4px;
+                        for u[i] in ["mg","ml","mcg"] : TouchArea {
+                            width: 44px; height: 40px;
+                            clicked => { root.sel-unit = i; }
+                            Rectangle {
+                                border-radius: Theme.radius-s;
+                                background: root.sel-unit == i ? Theme.color-medication : Theme.surface-variant;
+                                border-width: 1px;
+                                border-color: root.sel-unit == i ? Theme.color-medication : Theme.outline;
+                                Text {
+                                    text: u;
+                                    font-size: Theme.label-m;
+                                    color: root.sel-unit == i ? Theme.on-primary : Theme.on-surface;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            TextField {
+                label: "Notes";
+                placeholder: "Optional...";
+                edited(v) => { root.notes-val = v; }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+                OutlineButton { label: "Cancel"; clicked => { root.close(); } }
+                PrimaryButton {
+                    label: "Save";
+                    btn-color: Theme.color-medication;
+                    clicked => {
+                        root.save(
+                            root.name-val,
+                            root.dosage-val,
+                            ["mg","ml","mcg"][root.sel-unit],
+                            root.time-iso,
+                            root.notes-val
+                        );
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Add Baby Sheet
+component AddBabySheet inherits Rectangle {
+    in property <bool> show: false;
+    callback close();
+    callback save(string, string);
+    // name, birth-date-iso
+
+    out property <string> name-val: "";
+    out property <string> birth-date-val: "";
+
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    visible: show;
+
+    Rectangle {
+        y: parent.height - self.height;
+        width: parent.width;
+        height: 340px;
+        background: Theme.surface;
+        border-radius: Theme.radius-xl;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        clip: true;
+
+        VerticalLayout {
+            padding: Theme.space-l;
+            spacing: Theme.space-m;
+
+            Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; horizontal-alignment: center; }
+
+            Text {
+                text: "👶  Add Baby";
+                font-size: Theme.title-l;
+                font-weight: 700;
+                color: Theme.on-surface;
+            }
+
+            TextField {
+                label: "Baby's Name";
+                placeholder: "e.g. Emma";
+                edited(v) => { root.name-val = v; }
+            }
+
+            TextField {
+                label: "Birth Date (YYYY-MM-DD)";
+                placeholder: "2024-01-01";
+                edited(v) => { root.birth-date-val = v; }
+            }
+
+            HorizontalLayout {
+                spacing: Theme.space-m;
+                OutlineButton { label: "Cancel"; clicked => { root.close(); } }
+                PrimaryButton {
+                    label: "Add Baby";
+                    clicked => {
+                        root.save(root.name-val, root.birth-date-val);
+                        root.close();
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ─── Screen: Home / Dashboard ─────────────────────────────────────────────────
+
+component HomeScreen inherits Rectangle {
+    in property <[BabyData]> babies: [];
+    in property <SummaryData> summary: {};
+    in-out property <int> selected-baby-idx: 0;
+    in property <[FeedingData]> recent-feedings: [];
+    in property <[DiaperData]> recent-diapers: [];
+
+    background: Theme.background;
+
+    VerticalLayout {
+        padding-top: Theme.space-l;
+        padding-left: Theme.space-m;
+        padding-right: Theme.space-m;
+        spacing: Theme.space-m;
+
+        // Header
+        HorizontalLayout {
+            alignment: space-between;
+            vertical-alignment: center;
+
+            VerticalLayout {
+                Text {
+                    text: "Good morning! 🌸";
+                    font-size: Theme.title-m;
+                    color: Theme.on-surface-variant;
+                }
+                Text {
+                    text: babies.length > 0 ? babies[selected-baby-idx].name : "No baby yet";
+                    font-size: Theme.headline-m;
+                    font-weight: 700;
+                    color: Theme.on-surface;
+                }
+            }
+
+            // Baby avatar circle
+            Rectangle {
+                width: 52px;
+                height: 52px;
+                border-radius: 26px;
+                background: Theme.primary-container;
+                Text {
+                    text: babies.length > 0 ? babies[selected-baby-idx].name.substring(0, 1) : "?";
+                    font-size: 22px;
+                    color: Theme.primary;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        // Baby age chip
+        if babies.length > 0 : Chip {
+            text: "👶 " + babies[selected-baby-idx].age-display + " old";
+            chip-color: Theme.primary-container;
+        }
+
+        // Multi-baby selector
+        if babies.length > 1 : HorizontalLayout {
+            spacing: Theme.space-s;
+            for baby[i] in babies : TouchArea {
+                width: 80px;
+                height: 36px;
+                clicked => { root.selected-baby-idx = i; }
+                Rectangle {
+                    border-radius: Theme.radius-full;
+                    background: i == root.selected-baby-idx ? Theme.primary : Theme.surface-variant;
+                    Text {
+                        text: baby.name;
+                        font-size: Theme.label-m;
+                        font-weight: i == root.selected-baby-idx ? 700 : 400;
+                        color: i == root.selected-baby-idx ? Theme.on-primary : Theme.on-surface;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Summary cards row
+        HorizontalLayout {
+            spacing: Theme.space-m;
+            height: 100px;
+
+            Card {
+                width: 48%;
+                card-color: Theme.color-feeding.with-alpha(0.15);
+
+                VerticalLayout {
+                    padding: Theme.space-m;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { text: "🍼"; font-size: 20px; }
+                        Text {
+                            text: "Feedings";
+                            font-size: Theme.label-l;
+                            color: Theme.on-surface-variant;
+                            vertical-alignment: center;
+                        }
+                    }
+                    Text {
+                        text: summary.feedings-today;
+                        font-size: Theme.headline-m;
+                        font-weight: 700;
+                        color: Theme.on-surface;
+                    }
+                    Text {
+                        text: "Last: " + summary.last-feeding;
+                        font-size: Theme.label-s;
+                        color: Theme.on-surface-variant;
+                    }
+                }
+            }
+
+            Card {
+                width: 48%;
+                card-color: Theme.color-diaper.with-alpha(0.15);
+
+                VerticalLayout {
+                    padding: Theme.space-m;
+                    spacing: 4px;
+
+                    HorizontalLayout {
+                        spacing: 6px;
+                        Text { text: "🩹"; font-size: 20px; }
+                        Text {
+                            text: "Diapers";
+                            font-size: Theme.label-l;
+                            color: Theme.on-surface-variant;
+                            vertical-alignment: center;
+                        }
+                    }
+                    Text {
+                        text: summary.diapers-today;
+                        font-size: Theme.headline-m;
+                        font-weight: 700;
+                        color: Theme.on-surface;
+                    }
+                    Text {
+                        text: "Last: " + summary.last-diaper;
+                        font-size: Theme.label-s;
+                        color: Theme.on-surface-variant;
+                    }
+                }
+            }
+        }
+
+        // Stats row
+        HorizontalLayout {
+            spacing: Theme.space-m;
+            height: 80px;
+
+            Card {
+                width: 48%;
+                VerticalLayout {
+                    padding: Theme.space-m; spacing: 4px;
+                    Text { text: "⚖️ Weight"; font-size: Theme.label-l; color: Theme.on-surface-variant; }
+                    Text {
+                        text: summary.latest-weight != "" ? summary.latest-weight + " kg" : "—";
+                        font-size: Theme.title-l;
+                        font-weight: 700;
+                        color: Theme.on-surface;
+                    }
+                }
+            }
+            Card {
+                width: 48%;
+                VerticalLayout {
+                    padding: Theme.space-m; spacing: 4px;
+                    Text { text: "📏 Height"; font-size: Theme.label-l; color: Theme.on-surface-variant; }
+                    Text {
+                        text: summary.latest-height != "" ? summary.latest-height + " cm" : "—";
+                        font-size: Theme.title-l;
+                        font-weight: 700;
+                        color: Theme.on-surface;
+                    }
+                }
+            }
+        }
+
+        // Recent activity
+        Text {
+            text: "Recent Activity";
+            font-size: Theme.title-m;
+            font-weight: 700;
+            color: Theme.on-surface;
+        }
+
+        // Recent feedings list
+        for f in recent-feedings : Card {
+            height: 68px;
+            HorizontalLayout {
+                padding: Theme.space-m;
+                spacing: Theme.space-m;
+                vertical-alignment: center;
+
+                Rectangle {
+                    width: 40px; height: 40px;
+                    border-radius: 20px;
+                    background: Theme.color-feeding.with-alpha(0.2);
+                    Text {
+                        text: f.method-icon;
+                        font-size: 20px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+                VerticalLayout {
+                    vertical-alignment: center;
+                    Text {
+                        text: f.method-display;
+                        font-size: Theme.body-m;
+                        font-weight: 600;
+                        color: Theme.on-surface;
+                    }
+                    Text {
+                        text: f.time-display + " · " + f.duration-display;
+                        font-size: Theme.label-m;
+                        color: Theme.on-surface-variant;
+                    }
+                }
+                Text {
+                    text: "🍼";
+                    font-size: 12px;
+                    color: Theme.color-feeding;
+                    vertical-alignment: center;
+                }
+            }
+        }
+
+        // Spacer
+        Rectangle { height: Theme.space-xl; }
+    }
+}
+
+// ─── Screen: Feeding ──────────────────────────────────────────────────────────
+
+component FeedingScreen inherits Rectangle {
+    in property <[FeedingData]> feedings: [];
+    callback delete-feeding(string);
+
+    background: Theme.background;
+
+    VerticalLayout {
+        padding: Theme.space-m;
+        spacing: Theme.space-m;
+
+        Text {
+            text: "Feedings";
+            font-size: Theme.headline-s;
+            font-weight: 700;
+            color: Theme.on-surface;
+        }
+
+        if feedings.length == 0 : Rectangle {
+            height: 200px;
+            VerticalLayout {
+                alignment: center;
+                spacing: Theme.space-m;
+                Text { text: "🍼"; font-size: 48px; horizontal-alignment: center; }
+                Text {
+                    text: "No feedings recorded yet.\nTap + to add one!";
+                    font-size: Theme.body-m;
+                    color: Theme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        for f in feedings : Card {
+            height: 80px;
+
+            HorizontalLayout {
+                padding-left: Theme.space-m;
+                padding-right: Theme.space-s;
+                padding-top: Theme.space-s;
+                padding-bottom: Theme.space-s;
+                spacing: Theme.space-m;
+                vertical-alignment: center;
+
+                Rectangle {
+                    width: 44px; height: 44px;
+                    border-radius: 22px;
+                    background: Theme.color-feeding.with-alpha(0.2);
+                    Text {
+                        text: f.method-icon;
+                        font-size: 22px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
+                VerticalLayout {
+                    vertical-alignment: center;
+                    spacing: 3px;
+                    Text {
+                        text: f.method-display;
+                        font-size: Theme.body-m;
+                        font-weight: 700;
+                        color: Theme.on-surface;
+                    }
+                    Text {
+                        text: f.time-display;
+                        font-size: Theme.label-m;
+                        color: Theme.on-surface-variant;
+                    }
+                    HorizontalLayout {
+                        spacing: Theme.space-s;
+                        if f.duration-display != "" : Chip {
+                            text: "⏱ " + f.duration-display;
+                            chip-color: Theme.surface-variant;
+                        }
+                        if f.amount > 0 : Chip {
+                            text: f.amount + " ml";
+                            chip-color: Theme.secondary-container;
+                        }
+                    }
+                }
+
+                IconButton {
+                    icon-text: "🗑";
+                    icon-color: Theme.error;
+                    clicked => { root.delete-feeding(f.id); }
+                }
+            }
+        }
+
+        // bottom spacer for FAB
+        Rectangle { height: 80px; }
+    }
+}
+
+// ─── Screen: Diapers ─────────────────────────────────────────────────────────
+
+component DiapersScreen inherits Rectangle {
+    in property <[DiaperData]> diapers: [];
+    callback delete-diaper(string);
+
+    background: Theme.background;
+
+    VerticalLayout {
+        padding: Theme.space-m;
+        spacing: Theme.space-m;
+
+        Text {
+            text: "Diaper Changes";
+            font-size: Theme.headline-s;
+            font-weight: 700;
+            color: Theme.on-surface;
+        }
+
+        if diapers.length == 0 : Rectangle {
+            height: 200px;
+            VerticalLayout {
+                alignment: center;
+                spacing: Theme.space-m;
+                Text { text: "🩹"; font-size: 48px; horizontal-alignment: center; }
+                Text {
+                    text: "No diapers recorded yet.\nTap + to add one!";
+                    font-size: Theme.body-m;
+                    color: Theme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        for d in diapers : Card {
+            height: 76px;
+
+            HorizontalLayout {
+                padding-left: Theme.space-m;
+                padding-right: Theme.space-s;
+                padding-top: Theme.space-s;
+                padding-bottom: Theme.space-s;
+                spacing: Theme.space-m;
+                vertical-alignment: center;
+
+                Rectangle {
+                    width: 44px; height: 44px;
+                    border-radius: 22px;
+                    background: Theme.color-diaper.with-alpha(0.2);
+                    Text {
+                        text: d.icon;
+                        font-size: 20px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
+                VerticalLayout {
+                    vertical-alignment: center;
+                    spacing: 3px;
+                    Text {
+                        text: d.type-display;
+                        font-size: Theme.body-m;
+                        font-weight: 700;
+                        color: Theme.on-surface;
+                    }
+                    Text {
+                        text: d.time-display;
+                        font-size: Theme.label-m;
+                        color: Theme.on-surface-variant;
+                    }
+                    if d.color != "" : Chip {
+                        text: d.color;
+                        chip-color: Theme.surface-variant;
+                    }
+                }
+
+                IconButton {
+                    icon-text: "🗑";
+                    icon-color: Theme.error;
+                    clicked => { root.delete-diaper(d.id); }
+                }
+            }
+        }
+
+        Rectangle { height: 80px; }
+    }
+}
+
+// ─── Screen: Growth ───────────────────────────────────────────────────────────
+
+component GrowthChart inherits Rectangle {
+    in property <[WeightData]> weights: [];
+    in property <[HeightData]> heights: [];
+    in property <[HeadCircumferenceData]> hcs: [];
+    in property <int> active-chart: 0; // 0=weight, 1=height, 2=head
+
+    callback add-weight();
+    callback add-height();
+    callback add-hc();
+    callback delete-weight(string);
+    callback delete-height(string);
+    callback delete-hc(string);
+
+    background: Theme.background;
+
+    VerticalLayout {
+        padding: Theme.space-m;
+        spacing: Theme.space-m;
+
+        Text {
+            text: "Growth";
+            font-size: Theme.headline-s;
+            font-weight: 700;
+            color: Theme.on-surface;
+        }
+
+        // Chart type selector
+        HorizontalLayout {
+            spacing: Theme.space-s;
+            height: 44px;
+
+            for label[i] in ["⚖️ Weight", "📏 Height", "🔵 Head"] : TouchArea {
+                width: 104px;
+                clicked => { root.active-chart = i; }
+                Rectangle {
+                    border-radius: Theme.radius-full;
+                    background: root.active-chart == i ? Theme.primary : Theme.surface-variant;
+                    Text {
+                        text: label;
+                        font-size: Theme.label-m;
+                        font-weight: root.active-chart == i ? 700 : 400;
+                        color: root.active-chart == i ? Theme.on-primary : Theme.on-surface;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Chart Canvas placeholder
+        Card {
+            height: 220px;
+            card-color: Theme.surface-variant;
+
+            VerticalLayout {
+                padding: Theme.space-m;
+                alignment: center;
+
+                // Simple bar chart visualization
+                HorizontalLayout {
+                    spacing: 4px;
+                    alignment: end;
+                    vertical-alignment: end;
+                    height: 140px;
+
+                    if root.active-chart == 0 : for w in weights : Rectangle {
+                        width: 20px;
+                        height: Math.min(w.value * 20px, 130px);
+                        background: Theme.color-growth;
+                        border-radius: 4px;
+                        ToolTip {
+                            text: w.value-display;
+                        }
+                    }
+
+                    if root.active-chart == 1 : for h in heights : Rectangle {
+                        width: 20px;
+                        height: Math.min(h.value * 2px, 130px);
+                        background: Theme.secondary;
+                        border-radius: 4px;
+                    }
+
+                    if root.active-chart == 2 : for h in hcs : Rectangle {
+                        width: 20px;
+                        height: Math.min(h.value * 3px, 130px);
+                        background: Theme.color-medication;
+                        border-radius: 4px;
+                    }
+                }
+
+                Text {
+                    text: root.active-chart == 0 ? "Weight (kg)" : root.active-chart == 1 ? "Height (cm)" : "Head circumference (cm)";
+                    font-size: Theme.label-m;
+                    color: Theme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        // Data list
+        if root.active-chart == 0 : VerticalLayout {
+            spacing: Theme.space-s;
+            for w in weights : Card {
+                height: 56px;
+                HorizontalLayout {
+                    padding-left: Theme.space-m;
+                    padding-right: Theme.space-s;
+                    spacing: Theme.space-m;
+                    vertical-alignment: center;
+                    Text { text: "⚖️"; font-size: 18px; }
+                    VerticalLayout {
+                        vertical-alignment: center;
+                        Text { text: w.value-display + " kg"; font-size: Theme.body-m; font-weight: 700; color: Theme.on-surface; }
+                        Text { text: w.date-display; font-size: Theme.label-m; color: Theme.on-surface-variant; }
+                    }
+                    IconButton { icon-text: "🗑"; icon-color: Theme.error; clicked => { root.delete-weight(w.id); } }
+                }
+            }
+        }
+
+        if root.active-chart == 1 : VerticalLayout {
+            spacing: Theme.space-s;
+            for h in heights : Card {
+                height: 56px;
+                HorizontalLayout {
+                    padding-left: Theme.space-m;
+                    padding-right: Theme.space-s;
+                    spacing: Theme.space-m;
+                    vertical-alignment: center;
+                    Text { text: "📏"; font-size: 18px; }
+                    VerticalLayout {
+                        vertical-alignment: center;
+                        Text { text: h.value-display + " cm"; font-size: Theme.body-m; font-weight: 700; color: Theme.on-surface; }
+                        Text { text: h.date-display; font-size: Theme.label-m; color: Theme.on-surface-variant; }
+                    }
+                    IconButton { icon-text: "🗑"; icon-color: Theme.error; clicked => { root.delete-height(h.id); } }
+                }
+            }
+        }
+
+        if root.active-chart == 2 : VerticalLayout {
+            spacing: Theme.space-s;
+            for h in hcs : Card {
+                height: 56px;
+                HorizontalLayout {
+                    padding-left: Theme.space-m;
+                    padding-right: Theme.space-s;
+                    spacing: Theme.space-m;
+                    vertical-alignment: center;
+                    Text { text: "🔵"; font-size: 18px; }
+                    VerticalLayout {
+                        vertical-alignment: center;
+                        Text { text: h.value-display + " cm"; font-size: Theme.body-m; font-weight: 700; color: Theme.on-surface; }
+                        Text { text: h.date-display; font-size: Theme.label-m; color: Theme.on-surface-variant; }
+                    }
+                    IconButton { icon-text: "🗑"; icon-color: Theme.error; clicked => { root.delete-hc(h.id); } }
+                }
+            }
+        }
+
+        Rectangle { height: 80px; }
+    }
+}
+
+// ─── Screen: More ─────────────────────────────────────────────────────────────
+
+component MoreScreen inherits Rectangle {
+    in property <[BabyData]> babies: [];
+    in property <[MedicationData]> medications: [];
+    in property <[ToothData]> teeth: [];
+
+    callback add-baby();
+    callback delete-baby(string);
+    callback add-medication();
+    callback delete-medication(string);
+    callback add-tooth();
+    callback delete-tooth(string);
+
+    property <int> active-section: 0;
+
+    background: Theme.background;
+
+    VerticalLayout {
+        padding: Theme.space-m;
+        spacing: Theme.space-m;
+
+        Text {
+            text: "More";
+            font-size: Theme.headline-s;
+            font-weight: 700;
+            color: Theme.on-surface;
+        }
+
+        // Section tabs
+        HorizontalLayout {
+            spacing: Theme.space-s;
+            height: 40px;
+
+            for sec[i] in ["👶 Babies", "💊 Meds", "🦷 Teeth"] : TouchArea {
+                width: 96px;
+                clicked => { root.active-section = i; }
+                Rectangle {
+                    border-radius: Theme.radius-full;
+                    background: root.active-section == i ? Theme.on-surface : Theme.surface-variant;
+                    Text {
+                        text: sec;
+                        font-size: Theme.label-m;
+                        font-weight: root.active-section == i ? 700 : 400;
+                        color: root.active-section == i ? Theme.surface : Theme.on-surface;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Babies section
+        if root.active-section == 0 : VerticalLayout {
+            spacing: Theme.space-s;
+
+            for baby in babies : Card {
+                height: 72px;
+                HorizontalLayout {
+                    padding: Theme.space-m;
+                    spacing: Theme.space-m;
+                    vertical-alignment: center;
+                    Rectangle {
+                        width: 44px; height: 44px;
+                        border-radius: 22px;
+                        background: Theme.primary-container;
+                        Text {
+                            text: baby.name.substring(0, 1);
+                            font-size: 20px;
+                            color: Theme.primary;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                    }
+                    VerticalLayout {
+                        vertical-alignment: center;
+                        Text { text: baby.name; font-size: Theme.body-m; font-weight: 700; color: Theme.on-surface; }
+                        Text { text: baby.birth-date + " · " + baby.age-display; font-size: Theme.label-m; color: Theme.on-surface-variant; }
+                    }
+                    IconButton { icon-text: "🗑"; icon-color: Theme.error; clicked => { root.delete-baby(baby.id); } }
+                }
+            }
+
+            PrimaryButton {
+                label: "👶 Add Baby";
+                clicked => { root.add-baby(); }
+            }
+        }
+
+        // Medications section
+        if root.active-section == 1 : VerticalLayout {
+            spacing: Theme.space-s;
+
+            if medications.length == 0 : Rectangle {
+                height: 120px;
+                VerticalLayout {
+                    alignment: center;
+                    Text { text: "💊"; font-size: 36px; horizontal-alignment: center; }
+                    Text {
+                        text: "No medications recorded yet.";
+                        font-size: Theme.body-m;
+                        color: Theme.on-surface-variant;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+
+            for m in medications : Card {
+                height: 72px;
+                HorizontalLayout {
+                    padding: Theme.space-m;
+                    spacing: Theme.space-m;
+                    vertical-alignment: center;
+                    Rectangle {
+                        width: 44px; height: 44px;
+                        border-radius: 22px;
+                        background: Theme.color-medication.with-alpha(0.2);
+                        Text { text: "💊"; font-size: 22px; horizontal-alignment: center; vertical-alignment: center; }
+                    }
+                    VerticalLayout {
+                        vertical-alignment: center;
+                        Text { text: m.name; font-size: Theme.body-m; font-weight: 700; color: Theme.on-surface; }
+                        Text {
+                            text: m.dosage-display + " · " + m.time-display;
+                            font-size: Theme.label-m;
+                            color: Theme.on-surface-variant;
+                        }
+                    }
+                    IconButton { icon-text: "🗑"; icon-color: Theme.error; clicked => { root.delete-medication(m.id); } }
+                }
+            }
+        }
+
+        // Teeth section
+        if root.active-section == 2 : VerticalLayout {
+            spacing: Theme.space-m;
+
+            // Teeth diagram
+            Card {
+                height: 160px;
+                VerticalLayout {
+                    padding: Theme.space-m;
+                    spacing: Theme.space-s;
+                    Text { text: "Primary Teeth — " + teeth.length + "/20 erupted"; font-size: Theme.label-l; color: Theme.on-surface-variant; }
+
+                    // Upper teeth row
+                    HorizontalLayout {
+                        spacing: 3px;
+                        alignment: center;
+                        for i in [0,1,2,3,4,5,6,7,8,9] : Rectangle {
+                            property <bool> erupted: false;
+                            width: 24px; height: 28px;
+                            border-radius: 4px;
+                            background: erupted ? Theme.color-teeth : Theme.surface-variant;
+                            border-width: 1px;
+                            border-color: Theme.outline;
+                            Text {
+                                text: i < 4 ? "I" : i < 6 ? "C" : "M";
+                                font-size: 9px;
+                                color: Theme.on-surface-variant;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                    // Lower teeth row
+                    HorizontalLayout {
+                        spacing: 3px;
+                        alignment: center;
+                        for i in [10,11,12,13,14,15,16,17,18,19] : Rectangle {
+                            property <bool> erupted: false;
+                            width: 24px; height: 28px;
+                            border-radius: 4px;
+                            background: erupted ? Theme.color-teeth : Theme.surface-variant;
+                            border-width: 1px;
+                            border-color: Theme.outline;
+                            Text {
+                                text: i < 14 ? "I" : i < 16 ? "C" : "M";
+                                font-size: 9px;
+                                color: Theme.on-surface-variant;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for t in teeth : Card {
+                height: 60px;
+                HorizontalLayout {
+                    padding: Theme.space-m;
+                    spacing: Theme.space-m;
+                    vertical-alignment: center;
+                    Text { text: "🦷"; font-size: 22px; }
+                    VerticalLayout {
+                        vertical-alignment: center;
+                        Text { text: t.name; font-size: Theme.body-m; font-weight: 600; color: Theme.on-surface; }
+                        Text { text: t.date-display; font-size: Theme.label-m; color: Theme.on-surface-variant; }
+                    }
+                    IconButton { icon-text: "🗑"; icon-color: Theme.error; clicked => { root.delete-tooth(t.id); } }
+                }
+            }
+        }
+
+        Rectangle { height: 80px; }
+    }
+}
+
+// ─── Root AppWindow ───────────────────────────────────────────────────────────
+
+export component AppWindow inherits Window {
+    title: "BabyBuddy";
+    background: Theme.background;
+    preferred-width: 390px;
+    preferred-height: 844px;
+
+    // ── App State ──────────────────────────────────────────────────────────
+    in-out property <int> active-tab: 0;
+    in-out property <int> selected-baby-idx: 0;
+    in-out property <int> active-growth-chart: 0;
+
+    // Data properties
+    in property <[BabyData]> babies: [];
+    in property <SummaryData> summary: {};
+    in property <[FeedingData]> feedings: [];
+    in property <[DiaperData]> diapers: [];
+    in property <[WeightData]> weights: [];
+    in property <[HeightData]> heights: [];
+    in property <[HeadCircumferenceData]> hcs: [];
+    in property <[ToothData]> teeth: [];
+    in property <[MedicationData]> medications: [];
+
+    // Sheet visibility
+    in-out property <bool> show-add-feeding: false;
+    in-out property <bool> show-add-diaper: false;
+    in-out property <bool> show-add-weight: false;
+    in-out property <bool> show-add-height: false;
+    in-out property <bool> show-add-hc: false;
+    in-out property <bool> show-add-medication: false;
+    in-out property <bool> show-add-baby: false;
+    in-out property <bool> show-add-tooth: false;
+
+    // ── Callbacks ──────────────────────────────────────────────────────────
+    callback save-feeding(string, string, string, float, float, string);
+    // baby-id, method, type, duration-min, amount, notes
+
+    callback save-diaper(string, bool, bool, string, string, string);
+    // baby-id, wet, solid, color, amount, notes
+
+    callback save-weight(float, string, string);
+    // value, date-iso, notes
+
+    callback save-height(float, string, string);
+    callback save-hc(float, string, string);
+
+    callback save-medication(string, float, string, string, string);
+    // name, dosage, unit, time-iso, notes
+
+    callback save-baby(string, string);
+    // name, birth-date-iso
+
+    callback save-tooth(int, string, string);
+    // tooth-id, date-iso, notes
+
+    callback delete-feeding(string);
+    callback delete-diaper(string);
+    callback delete-weight(string);
+    callback delete-height(string);
+    callback delete-hc(string);
+    callback delete-medication(string);
+    callback delete-baby(string);
+    callback delete-tooth(string);
+
+    callback refresh-data();
+    callback baby-selected(int);
+
+    // ── Layout ─────────────────────────────────────────────────────────────
+    VerticalLayout {
+        // Scrollable main content area
+        Flickable {
+            height: parent.height - 80px;
+            viewport-height: content.preferred-height;
+
+            content := VerticalLayout {
+                // Home
+                if root.active-tab == 0 : HomeScreen {
+                    width: root.width;
+                    babies: root.babies;
+                    summary: root.summary;
+                    selected-baby-idx <=> root.selected-baby-idx;
+                    recent-feedings: root.feedings;
+                    recent-diapers: root.diapers;
+                }
+
+                // Feedings
+                if root.active-tab == 1 : FeedingScreen {
+                    width: root.width;
+                    feedings: root.feedings;
+                    delete-feeding(id) => { root.delete-feeding(id); }
+                }
+
+                // Diapers
+                if root.active-tab == 2 : DiapersScreen {
+                    width: root.width;
+                    diapers: root.diapers;
+                    delete-diaper(id) => { root.delete-diaper(id); }
+                }
+
+                // Growth
+                if root.active-tab == 3 : GrowthChart {
+                    width: root.width;
+                    weights: root.weights;
+                    heights: root.heights;
+                    hcs: root.hcs;
+                    active-chart <=> root.active-growth-chart;
+                    add-weight => { root.show-add-weight = true; }
+                    add-height => { root.show-add-height = true; }
+                    add-hc => { root.show-add-hc = true; }
+                    delete-weight(id) => { root.delete-weight(id); }
+                    delete-height(id) => { root.delete-height(id); }
+                    delete-hc(id) => { root.delete-hc(id); }
+                }
+
+                // More
+                if root.active-tab == 4 : MoreScreen {
+                    width: root.width;
+                    babies: root.babies;
+                    medications: root.medications;
+                    teeth: root.teeth;
+                    add-baby => { root.show-add-baby = true; }
+                    delete-baby(id) => { root.delete-baby(id); }
+                    add-medication => { root.show-add-medication = true; }
+                    delete-medication(id) => { root.delete-medication(id); }
+                    add-tooth => { root.show-add-tooth = true; }
+                    delete-tooth(id) => { root.delete-tooth(id); }
+                }
+            }
+        }
+
+        // Bottom Navigation
+        BottomNavBar {
+            active-tab <=> root.active-tab;
+        }
+    }
+
+    // ── FAB (only on tabs 1, 2, 3) ─────────────────────────────────────────
+    if root.active-tab == 1 : FAB {
+        x: root.width - 80px;
+        y: root.height - 160px;
+        icon: "+";
+        fab-color: Theme.color-feeding;
+        clicked => { root.show-add-feeding = true; }
+    }
+
+    if root.active-tab == 2 : FAB {
+        x: root.width - 80px;
+        y: root.height - 160px;
+        icon: "+";
+        fab-color: Theme.color-diaper;
+        clicked => { root.show-add-diaper = true; }
+    }
+
+    if root.active-tab == 3 : FAB {
+        x: root.width - 80px;
+        y: root.height - 160px;
+        icon: "+";
+        fab-color: Theme.color-growth;
+        clicked => {
+            if root.active-growth-chart == 0 { root.show-add-weight = true; }
+            else if root.active-growth-chart == 1 { root.show-add-height = true; }
+            else { root.show-add-hc = true; }
+        }
+    }
+
+    // ── Modal Overlays & Sheets ─────────────────────────────────────────────
+
+    if root.show-add-feeding || root.show-add-diaper || root.show-add-weight
+        || root.show-add-height || root.show-add-hc || root.show-add-medication
+        || root.show-add-baby : ModalOverlay {
+        show: true;
+        close => {
+            root.show-add-feeding = false;
+            root.show-add-diaper = false;
+            root.show-add-weight = false;
+            root.show-add-height = false;
+            root.show-add-hc = false;
+            root.show-add-medication = false;
+            root.show-add-baby = false;
+        }
+    }
+
+    AddFeedingSheet {
+        show: root.show-add-feeding;
+        babies: root.babies;
+        close => { root.show-add-feeding = false; }
+        save(baby-id, method, type_, duration, amount, notes) => {
+            root.save-feeding(baby-id, method, type_, duration, amount, notes);
+            root.show-add-feeding = false;
+        }
+    }
+
+    AddDiaperSheet {
+        show: root.show-add-diaper;
+        babies: root.babies;
+        close => { root.show-add-diaper = false; }
+        save(baby-id, wet, solid, color, amount, notes) => {
+            root.save-diaper(baby-id, wet, solid, color, amount, notes);
+            root.show-add-diaper = false;
+        }
+    }
+
+    AddMeasurementSheet {
+        show: root.show-add-weight;
+        title: "Weight";
+        unit: "kg";
+        accent: Theme.color-growth;
+        close => { root.show-add-weight = false; }
+        save(val, date, notes) => {
+            root.save-weight(val, date, notes);
+            root.show-add-weight = false;
+        }
+    }
+
+    AddMeasurementSheet {
+        show: root.show-add-height;
+        title: "Height";
+        unit: "cm";
+        accent: Theme.secondary;
+        close => { root.show-add-height = false; }
+        save(val, date, notes) => {
+            root.save-height(val, date, notes);
+            root.show-add-height = false;
+        }
+    }
+
+    AddMeasurementSheet {
+        show: root.show-add-hc;
+        title: "Head Circumference";
+        unit: "cm";
+        accent: Theme.color-medication;
+        close => { root.show-add-hc = false; }
+        save(val, date, notes) => {
+            root.save-hc(val, date, notes);
+            root.show-add-hc = false;
+        }
+    }
+
+    AddMedicationSheet {
+        show: root.show-add-medication;
+        close => { root.show-add-medication = false; }
+        save(name, dosage, unit, time, notes) => {
+            root.save-medication(name, dosage, unit, time, notes);
+            root.show-add-medication = false;
+        }
+    }
+
+    AddBabySheet {
+        show: root.show-add-baby;
+        close => { root.show-add-baby = false; }
+        save(name, birth-date) => {
+            root.save-baby(name, birth-date);
+            root.show-add-baby = false;
+        }
+    }
+}

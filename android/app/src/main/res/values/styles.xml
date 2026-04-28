@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. Since UI is handled entirely by Slint,
+         we use a transparent/NoActionBar style. -->
+    <style name="Theme.BabyBuddy" parent="android:Theme.Material.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>

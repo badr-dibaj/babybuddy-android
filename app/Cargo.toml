@@ -1,0 +1,58 @@
+[package]
+name = "babybuddy"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "babybuddy"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "babybuddy-desktop"
+path = "src/main.rs"
+required-features = ["desktop"]
+
+[features]
+default = []
+# android: production target — requires Android NDK + android-activity 0.6
+android = [
+    "dep:android-activity",
+    "dep:android_logger",
+    "slint/backend-android-activity-06",
+]
+# desktop: development/CI build — pure-Rust software renderer, no GPU/NDK needed
+desktop = [
+    "slint/backend-winit",
+    "slint/renderer-winit-software",
+    "dep:env_logger",
+]
+
+[dependencies]
+# Slint 1.8 — no default backend (chosen via features)
+slint = { version = "~1.8", default-features = false, features = ["std"] }
+
+# Android-only (optional)
+android-activity = { version = "0.6", features = ["native-activity"], optional = true }
+android_logger   = { version = "0.14", optional = true }
+
+# Cross-platform
+rusqlite   = { version = "0.31", features = ["bundled"] }
+chrono     = { version = "0.4",  features = ["serde"] }
+serde      = { version = "1",    features = ["derive"] }
+serde_json = "1"
+uuid       = { version = "1",    features = ["v4"] }
+log        = "0.4"
+env_logger = { version = "0.11", optional = true }
+once_cell  = "1"
+
+[build-dependencies]
+slint-build = "~1.8"
+
+[package.metadata.android]
+package            = "com.babybuddy.app"
+label              = "BabyBuddy"
+min_sdk_version    = 29
+target_sdk_version = 34
+
+[[package.metadata.android.uses_permission]]
+name = "android.permission.READ_MEDIA_IMAGES"

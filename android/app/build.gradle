@@ -1,0 +1,97 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// Path to the Rust project root (relative to this build.gradle)
+def rustProjectDir = file("${rootProject.projectDir}/../")
+def rustLibName = "babybuddy"
+
+android {
+    namespace 'com.babybuddy.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.babybuddy.app"
+        minSdk 29
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        // ABIs to build for — arm64 covers modern Android devices
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    // Tell Gradle where the pre-built .so files will be
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+}
+
+// ─── Rust build tasks ──────────────────────────────────────────────────────
+
+def abiToTarget = [
+    'arm64-v8a'   : 'aarch64-linux-android',
+    'armeabi-v7a' : 'armv7-linux-androideabi',
+    'x86_64'      : 'x86_64-linux-android',
+]
+
+// Build the Rust library for each ABI and copy .so into jniLibs
+android.applicationVariants.all { variant ->
+    def variantName = variant.name.capitalize()
+    def profile = variant.buildType.name == 'release' ? 'release' : 'debug'
+
+    abiToTarget.each { abi, target ->
+        def rustBuildTask = tasks.create("buildRust${variantName}${abi.replace('-', '')}") {
+            group = 'rust'
+            description = "Compile Rust library for ${abi} (${profile})"
+
+            doLast {
+                exec {
+                    workingDir rustProjectDir
+                    def args = ['cargo', 'build', '--target', target, '--package', rustLibName, '--features', 'android']
+                    if (profile == 'release') args += ['--release']
+                    commandLine args
+                }
+
+                def soSrc = file("${rustProjectDir}/target/${target}/${profile}/lib${rustLibName}.so")
+                def soDst = file("${projectDir}/src/main/jniLibs/${abi}/lib${rustLibName}.so")
+                soDst.parentFile.mkdirs()
+                copy {
+                    from soSrc
+                    into soDst.parentFile
+                }
+            }
+        }
+
+        variant.mergeNativeLibsProvider.get().dependsOn rustBuildTask
+    }
+}
