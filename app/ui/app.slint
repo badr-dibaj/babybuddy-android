@@ -1451,7 +1451,7 @@ component GrowthChart inherits Rectangle {
     in property <[WeightData]> weights: [];
     in property <[HeightData]> heights: [];
     in property <[HeadCircumferenceData]> hcs: [];
-    in property <int> active-chart: 0; // 0=weight, 1=height, 2=head
+    in-out property <int> active-chart: 0; // 0=weight, 1=height, 2=head
 
     callback add-weight();
     callback add-height();
