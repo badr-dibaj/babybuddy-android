@@ -3,10 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-// Path to the Rust project root (relative to this build.gradle)
-def rustProjectDir = file("${rootProject.projectDir}/../")
-def rustLibName = "babybuddy"
-
 android {
     namespace 'com.babybuddy.app'
     compileSdk 34
@@ -18,7 +14,6 @@ android {
         versionCode 1
         versionName "1.0.0"
 
-        // ABIs to build for — arm64 covers modern Android devices
         ndk {
             abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
         }
@@ -43,7 +38,8 @@ android {
         jvmTarget = '1.8'
     }
 
-    // Tell Gradle where the pre-built .so files will be
+    // The Rust .so files are pre-built by `cargo ndk` in CI (see .github/workflows/android.yml)
+    // and placed directly into jniLibs before Gradle runs.
     sourceSets {
         main {
             jniLibs.srcDirs = ['src/main/jniLibs']
@@ -54,44 +50,4 @@ android {
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-}
-
-// ─── Rust build tasks ──────────────────────────────────────────────────────
-
-def abiToTarget = [
-    'arm64-v8a'   : 'aarch64-linux-android',
-    'armeabi-v7a' : 'armv7-linux-androideabi',
-    'x86_64'      : 'x86_64-linux-android',
-]
-
-// Build the Rust library for each ABI and copy .so into jniLibs
-android.applicationVariants.all { variant ->
-    def variantName = variant.name.capitalize()
-    def profile = variant.buildType.name == 'release' ? 'release' : 'debug'
-
-    abiToTarget.each { abi, target ->
-        def rustBuildTask = tasks.create("buildRust${variantName}${abi.replace('-', '')}") {
-            group = 'rust'
-            description = "Compile Rust library for ${abi} (${profile})"
-
-            doLast {
-                exec {
-                    workingDir rustProjectDir
-                    def args = ['cargo', 'build', '--target', target, '--package', rustLibName, '--features', 'android']
-                    if (profile == 'release') args += ['--release']
-                    commandLine args
-                }
-
-                def soSrc = file("${rustProjectDir}/target/${target}/${profile}/lib${rustLibName}.so")
-                def soDst = file("${projectDir}/src/main/jniLibs/${abi}/lib${rustLibName}.so")
-                soDst.parentFile.mkdirs()
-                copy {
-                    from soSrc
-                    into soDst.parentFile
-                }
-            }
-        }
-
-        variant.mergeNativeLibsProvider.get().dependsOn rustBuildTask
-    }
 }
