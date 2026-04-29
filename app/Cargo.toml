@@ -28,8 +28,8 @@ desktop = [
 ]
 
 [dependencies]
-# Slint 1.8 — no default backend (chosen via features)
-slint = { version = "~1.8", default-features = false, features = ["std"] }
+# Slint 1.8 — compat-1-2 required; no default backend (chosen via features)
+slint = { version = "~1.8", default-features = false, features = ["std", "compat-1-2"] }
 
 # Android-only (optional)
 android-activity = { version = "0.6", features = ["native-activity"], optional = true }
