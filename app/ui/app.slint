@@ -474,7 +474,7 @@ component AddFeedingSheet inherits Rectangle {
     in property <[BabyData]> babies: [];
 
     callback close();
-    callback save(string, string, string, string, float, string);
+    callback save(string, string, string, float, float, string);
     // baby-id, method, type, duration-min, amount, notes
 
     out property <string> sel-baby-id: babies.length > 0 ? babies[0].id : "";
