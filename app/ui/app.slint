@@ -175,15 +175,19 @@ component Chip inherits Rectangle {
     height: 32px;
     background: chip-color;
     border-radius: Theme.radius-full;
-    padding-left: Theme.space-m;
-    padding-right: Theme.space-m;
+    min-width: 48px;
 
-    Text {
-        text: root.text;
-        font-size: Theme.label-l;
-        color: root.text-color;
-        vertical-alignment: center;
-        horizontal-alignment: center;
+    HorizontalLayout {
+        padding-left: Theme.space-m;
+        padding-right: Theme.space-m;
+        alignment: center;
+        Text {
+            text: root.text;
+            font-size: Theme.label-l;
+            color: root.text-color;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+        }
     }
 }
 
@@ -1530,9 +1534,6 @@ component GrowthChart inherits Rectangle {
                         height: Math.min(w.value * 20px, 130px);
                         background: Theme.color-growth;
                         border-radius: 4px;
-                        ToolTip {
-                            text: w.value-display;
-                        }
                     }
 
                     if root.active-chart == 1 : for h in heights : Rectangle {
