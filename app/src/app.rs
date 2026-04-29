@@ -25,7 +25,7 @@ fn db_path_local() -> String {
 }
 
 #[cfg(feature = "android")]
-fn db_path_android(app: &android_activity::AndroidApp) -> String {
+fn db_path_android(app: &slint::android::AndroidApp) -> String {
     app.internal_data_path()
         .map(|p| format!("{}/babybuddy.db", p.to_string_lossy()))
         .unwrap_or_else(|| "/data/data/com.babybuddy.app/babybuddy.db".to_string())
@@ -399,7 +399,7 @@ pub fn run_app() {
 // ─── Android run ─────────────────────────────────────────────────────────────
 
 #[cfg(feature = "android")]
-pub fn run_app_android(app: android_activity::AndroidApp) {
+pub fn run_app_android(app: slint::android::AndroidApp) {
     slint::android::init(app.clone()).expect("Slint Android init failed");
 
     let path = db_path_android(&app);

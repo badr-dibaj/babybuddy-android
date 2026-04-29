@@ -328,10 +328,9 @@ component TextField inherits Rectangle {
                 height: parent.height;
                 text: root.value;
                 font-size: Theme.body-l;
-                color: Theme.on-surface;
-                enabled: root.enabled;
+                color: root.enabled ? Theme.on-surface : Theme.on-surface-variant;
+                read-only: !root.enabled;
                 vertical-alignment: center;
-                placeholder-color: Theme.on-surface-variant;
 
                 accepted => { root.accepted(self.text); }
                 edited => { root.value = self.text; root.edited(self.text); }
@@ -504,12 +503,14 @@ component AddFeedingSheet inherits Rectangle {
             spacing: Theme.space-m;
 
             // Handle bar
-            Rectangle {
-                width: 40px;
-                height: 4px;
-                border-radius: 2px;
-                background: Theme.outline;
-                horizontal-alignment: center;
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 40px;
+                    height: 4px;
+                    border-radius: 2px;
+                    background: Theme.outline;
+                }
             }
 
             Text {
@@ -643,11 +644,13 @@ component AddDiaperSheet inherits Rectangle {
             padding: Theme.space-l;
             spacing: Theme.space-m;
 
-            Rectangle {
-                width: 40px; height: 4px;
-                border-radius: 2px;
-                background: Theme.outline;
-                horizontal-alignment: center;
+            HorizontalLayout {
+                alignment: center;
+                Rectangle {
+                    width: 40px; height: 4px;
+                    border-radius: 2px;
+                    background: Theme.outline;
+                }
             }
 
             Text {
@@ -800,7 +803,7 @@ component AddMeasurementSheet inherits Rectangle {
             padding: Theme.space-l;
             spacing: Theme.space-m;
 
-            Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; horizontal-alignment: center; }
+            HorizontalLayout { alignment: center; Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; } }
 
             Text {
                 text: "📏  Add " + root.title;
@@ -882,7 +885,7 @@ component AddMedicationSheet inherits Rectangle {
             padding: Theme.space-l;
             spacing: Theme.space-m;
 
-            Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; horizontal-alignment: center; }
+            HorizontalLayout { alignment: center; Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; } }
 
             Text {
                 text: "💊  Add Medication";
@@ -995,7 +998,7 @@ component AddBabySheet inherits Rectangle {
             padding: Theme.space-l;
             spacing: Theme.space-m;
 
-            Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; horizontal-alignment: center; }
+            HorizontalLayout { alignment: center; Rectangle { width: 40px; height: 4px; border-radius: 2px; background: Theme.outline; } }
 
             Text {
                 text: "👶  Add Baby";

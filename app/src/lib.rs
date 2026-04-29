@@ -11,11 +11,11 @@ pub mod app;
 // Re-export for desktop binary
 pub use app::run_app;
 
-// Android entry point
-
+// Android entry point — uses slint's re-export of AndroidApp to guarantee
+// the exact same type instance that slint::android::init() expects.
 #[cfg(feature = "android")]
 mod android_entry {
-    use android_activity::AndroidApp;
+    use slint::android::AndroidApp;
     use log::info;
 
     #[no_mangle]

@@ -14,9 +14,8 @@ required-features = ["desktop"]
 
 [features]
 default = []
-# android: production target — requires Android NDK + android-activity 0.6
+# android: production target — requires Android NDK. AndroidApp comes from slint re-export.
 android = [
-    "dep:android-activity",
     "dep:android_logger",
     "slint/backend-android-activity-06",
     "slint/renderer-software",
@@ -33,7 +32,6 @@ desktop = [
 slint = { version = "~1.8", default-features = false, features = ["std", "compat-1-2"] }
 
 # Android-only (optional)
-android-activity = { version = "0.6", features = ["native-activity"], optional = true }
 android_logger   = { version = "0.14", optional = true }
 
 # Cross-platform
