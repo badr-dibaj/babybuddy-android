@@ -92,7 +92,7 @@ struct FeedingData {
     method-display: string,
     method-icon: string,
     duration-display: string,
-    amount: float,
+    amount: string,
     notes: string,
 }
 
@@ -143,8 +143,8 @@ struct MedicationData {
 }
 
 struct SummaryData {
-    feedings-today: int,
-    diapers-today: int,
+    feedings-today: string,
+    diapers-today: string,
     last-feeding: string,
     last-diaper: string,
     latest-weight: string,
@@ -1131,7 +1131,7 @@ component HomeScreen inherits Rectangle {
                         }
                     }
                     Text {
-                        text: "" + summary.feedings-today;
+                        text: summary.feedings-today;
                         font-size: Theme.headline-m;
                         font-weight: 700;
                         color: Theme.on-surface;
@@ -1163,7 +1163,7 @@ component HomeScreen inherits Rectangle {
                         }
                     }
                     Text {
-                        text: "" + summary.diapers-today;
+                        text: summary.diapers-today;
                         font-size: Theme.headline-m;
                         font-weight: 700;
                         color: Theme.on-surface;
@@ -1338,8 +1338,8 @@ component FeedingScreen inherits Rectangle {
                             text: "⏱ " + f.duration-display;
                             chip-color: Theme.surface-variant;
                         }
-                        if f.amount > 0 : Chip {
-                            text: "" + f.amount + " ml";
+                        if f.amount != "" : Chip {
+                            text: f.amount + " ml";
                             chip-color: Theme.secondary-container;
                         }
                     }
@@ -1619,6 +1619,7 @@ component MoreScreen inherits Rectangle {
     in property <[BabyData]> babies: [];
     in property <[MedicationData]> medications: [];
     in property <[ToothData]> teeth: [];
+    in property <string> teeth-erupted-str: "0";
 
     callback add-baby();
     callback delete-baby(string);
@@ -1752,7 +1753,7 @@ component MoreScreen inherits Rectangle {
                 VerticalLayout {
                     padding: Theme.space-m;
                     spacing: Theme.space-s;
-                    Text { text: "Primary Teeth — " + teeth.length + "/20 erupted"; font-size: Theme.label-l; color: Theme.on-surface-variant; }
+                    Text { text: "Primary Teeth — " + teeth-erupted-str + "/20 erupted"; font-size: Theme.label-l; color: Theme.on-surface-variant; }
 
                     // Upper teeth row
                     HorizontalLayout {
@@ -1838,6 +1839,7 @@ export component AppWindow inherits Window {
     in property <[HeightData]> heights: [];
     in property <[HeadCircumferenceData]> hcs: [];
     in property <[ToothData]> teeth: [];
+    in property <string> teeth-erupted-str: "0";
     in property <[MedicationData]> medications: [];
 
     // Sheet visibility
@@ -1937,6 +1939,7 @@ export component AppWindow inherits Window {
                     babies: root.babies;
                     medications: root.medications;
                     teeth: root.teeth;
+                    teeth-erupted-str: root.teeth-erupted-str;
                     add-baby => { root.show-add-baby = true; }
                     delete-baby(id) => { root.delete-baby(id); }
                     add-medication => { root.show-add-medication = true; }

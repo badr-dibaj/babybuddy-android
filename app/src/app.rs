@@ -51,7 +51,7 @@ fn to_slint_feeding(f: &crate::db::models::Feeding) -> FeedingData {
         method_display: f.method.display().into(),
         method_icon: f.method.icon().into(),
         duration_display: f.duration_display().into(),
-        amount: f.amount.unwrap_or(0.0) as f32,
+        amount: f.amount.map(|a| format!("{:.1}", a)).unwrap_or_default().into(),
         notes: f.notes.clone().unwrap_or_default().into(),
     }
 }
@@ -116,8 +116,8 @@ fn to_slint_medication(m: &crate::db::models::Medication) -> MedicationData {
 
 fn to_slint_summary(s: &DaySummary) -> SummaryData {
     SummaryData {
-        feedings_today: s.feedings_today as i32,
-        diapers_today: s.diapers_today as i32,
+        feedings_today: s.feedings_today.to_string().into(),
+        diapers_today: s.diapers_today.to_string().into(),
         last_feeding: s.last_feeding.as_ref().map(format_relative).unwrap_or_else(|| "—".into()).into(),
         last_diaper: s.last_diaper.as_ref().map(format_relative).unwrap_or_else(|| "—".into()).into(),
         latest_weight: s.latest_weight.map(|w| format!("{:.2}", w)).unwrap_or_default().into(),
@@ -163,8 +163,10 @@ pub fn refresh_all(ui: &AppWindow, db: &Database, selected_idx: usize) {
         .map(to_slint_hc).collect();
     ui.set_hcs(Rc::new(VecModel::from(hcs)).into());
 
-    let teeth: Vec<ToothData> = db.get_teeth(baby_id).unwrap_or_default().iter()
-        .map(to_slint_tooth).collect();
+    let teeth_raw = db.get_teeth(baby_id).unwrap_or_default();
+    let teeth_count = teeth_raw.len();
+    let teeth: Vec<ToothData> = teeth_raw.iter().map(to_slint_tooth).collect();
+    ui.set_teeth_erupted_str(teeth_count.to_string().into());
     ui.set_teeth(Rc::new(VecModel::from(teeth)).into());
 
     let meds: Vec<MedicationData> = db.get_medications(baby_id, 100).unwrap_or_default().iter()
