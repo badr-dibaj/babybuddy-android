@@ -597,8 +597,8 @@ component AddFeedingSheet inherits Rectangle {
                     clicked => {
                         root.save(
                             root.sel-baby-id,
-                            ["left breast","right breast","both breasts","bottle","solid food"][root.sel-method],
-                            ["breast milk","breast milk","breast milk","formula","solid food"][root.sel-method],
+                            root.sel-method == 0 ? "left breast" : root.sel-method == 1 ? "right breast" : root.sel-method == 2 ? "both breasts" : root.sel-method == 3 ? "bottle" : "solid food",
+                            root.sel-method == 3 ? "formula" : root.sel-method == 4 ? "solid food" : "breast milk",
                             root.duration-val,
                             root.amount-val,
                             root.notes-val
@@ -722,7 +722,7 @@ component AddDiaperSheet inherits Rectangle {
                     Rectangle {
                         border-radius: Theme.radius-full;
                         background: root.sel-color == i
-                            ? [#FFF59D,#A5D6A7,#BCAAA4,#616161,#FFCC80][i]
+                            ? (i == 0 ? #FFF59D : i == 1 ? #A5D6A7 : i == 2 ? #BCAAA4 : i == 3 ? #616161 : #FFCC80)
                             : Theme.surface-variant;
                         border-width: 1.5px;
                         border-color: root.sel-color == i ? Theme.on-surface-variant : Theme.outline;
@@ -757,8 +757,8 @@ component AddDiaperSheet inherits Rectangle {
                             root.sel-baby-id,
                             root.sel-wet,
                             root.sel-solid,
-                            ["yellow","green","brown","black","orange"][root.sel-color],
-                            ["small","medium","large"][root.sel-amount],
+                            root.sel-color == 0 ? "yellow" : root.sel-color == 1 ? "green" : root.sel-color == 2 ? "brown" : root.sel-color == 3 ? "black" : "orange",
+                            root.sel-amount == 0 ? "small" : root.sel-amount == 1 ? "medium" : "large",
                             root.notes-val
                         );
                         root.close();
@@ -953,7 +953,7 @@ component AddMedicationSheet inherits Rectangle {
                         root.save(
                             root.name-val,
                             root.dosage-val,
-                            ["mg","ml","mcg"][root.sel-unit],
+                            root.sel-unit == 0 ? "mg" : root.sel-unit == 1 ? "ml" : "mcg",
                             root.time-iso,
                             root.notes-val
                         );
@@ -1759,7 +1759,7 @@ component MoreScreen inherits Rectangle {
                     HorizontalLayout {
                         spacing: 3px;
                         alignment: center;
-                        for i in [0,1,2,3,4,5,6,7,8,9] : Rectangle {
+                        for i in 10 : Rectangle {
                             property <bool> erupted: false;
                             width: 24px; height: 28px;
                             border-radius: 4px;
@@ -1779,7 +1779,7 @@ component MoreScreen inherits Rectangle {
                     HorizontalLayout {
                         spacing: 3px;
                         alignment: center;
-                        for i in [10,11,12,13,14,15,16,17,18,19] : Rectangle {
+                        for i in 10 : Rectangle {
                             property <bool> erupted: false;
                             width: 24px; height: 28px;
                             border-radius: 4px;
@@ -1787,7 +1787,7 @@ component MoreScreen inherits Rectangle {
                             border-width: 1px;
                             border-color: Theme.outline;
                             Text {
-                                text: i < 14 ? "I" : i < 16 ? "C" : "M";
+                                text: i < 4 ? "I" : i < 6 ? "C" : "M";
                                 font-size: 9px;
                                 color: Theme.on-surface-variant;
                                 horizontal-alignment: center;
