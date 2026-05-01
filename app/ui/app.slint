@@ -532,7 +532,7 @@ component AddFeedingSheet inherits Rectangle {
             HorizontalLayout {
                 spacing: Theme.space-s;
 
-                for method[i] in ["Left", "Right", "Both", "Bottle", "Solid"] : TouchArea {
+                for i in 5 : TouchArea {
                     width: 64px;
                     height: 40px;
                     clicked => { root.sel-method = i; }
@@ -544,7 +544,7 @@ component AddFeedingSheet inherits Rectangle {
                         border-color: Theme.outline;
 
                         Text {
-                            text: method;
+                            text: i == 0 ? "Left" : i == 1 ? "Right" : i == 2 ? "Both" : i == 3 ? "Bottle" : "Solid";
                             font-size: Theme.label-s;
                             font-weight: root.sel-method == i ? 700 : 400;
                             color: root.sel-method == i ? Theme.on-primary : Theme.on-surface;
@@ -716,7 +716,7 @@ component AddDiaperSheet inherits Rectangle {
 
             HorizontalLayout {
                 spacing: 6px;
-                for col[i] in ["Yellow","Green","Brown","Black","Orange"] : TouchArea {
+                for i in 5 : TouchArea {
                     width: 60px; height: 32px;
                     clicked => { root.sel-color = i; }
                     Rectangle {
@@ -727,7 +727,7 @@ component AddDiaperSheet inherits Rectangle {
                         border-width: 1.5px;
                         border-color: root.sel-color == i ? Theme.on-surface-variant : Theme.outline;
                         Text {
-                            text: col;
+                            text: i == 0 ? "Yellow" : i == 1 ? "Green" : i == 2 ? "Brown" : i == 3 ? "Black" : "Orange";
                             font-size: Theme.label-s;
                             color: Theme.on-surface;
                             horizontal-alignment: center;
@@ -916,7 +916,7 @@ component AddMedicationSheet inherits Rectangle {
                     }
                     HorizontalLayout {
                         spacing: 4px;
-                        for u[i] in ["mg","ml","mcg"] : TouchArea {
+                        for i in 3 : TouchArea {
                             width: 44px; height: 40px;
                             clicked => { root.sel-unit = i; }
                             Rectangle {
@@ -925,7 +925,7 @@ component AddMedicationSheet inherits Rectangle {
                                 border-width: 1px;
                                 border-color: root.sel-unit == i ? Theme.color-medication : Theme.outline;
                                 Text {
-                                    text: u;
+                                    text: i == 0 ? "mg" : i == 1 ? "ml" : "mcg";
                                     font-size: Theme.label-m;
                                     color: root.sel-unit == i ? Theme.on-primary : Theme.on-surface;
                                     horizontal-alignment: center;
@@ -1478,14 +1478,14 @@ component GrowthChart inherits Rectangle {
             spacing: Theme.space-s;
             height: 44px;
 
-            for label[i] in ["⚖️ Weight", "📏 Height", "🔵 Head"] : TouchArea {
+            for i in 3 : TouchArea {
                 width: 104px;
                 clicked => { root.active-chart = i; }
                 Rectangle {
                     border-radius: Theme.radius-full;
                     background: root.active-chart == i ? Theme.primary : Theme.surface-variant;
                     Text {
-                        text: label;
+                        text: i == 0 ? "⚖️ Weight" : i == 1 ? "📏 Height" : "🔵 Head";
                         font-size: Theme.label-m;
                         font-weight: root.active-chart == i ? 700 : 400;
                         color: root.active-chart == i ? Theme.on-primary : Theme.on-surface;
@@ -1648,14 +1648,14 @@ component MoreScreen inherits Rectangle {
             spacing: Theme.space-s;
             height: 40px;
 
-            for sec[i] in ["👶 Babies", "💊 Meds", "🦷 Teeth"] : TouchArea {
+            for i in 3 : TouchArea {
                 width: 96px;
                 clicked => { root.active-section = i; }
                 Rectangle {
                     border-radius: Theme.radius-full;
                     background: root.active-section == i ? Theme.on-surface : Theme.surface-variant;
                     Text {
-                        text: sec;
+                        text: i == 0 ? "👶 Babies" : i == 1 ? "💊 Meds" : "🦷 Teeth";
                         font-size: Theme.label-m;
                         font-weight: root.active-section == i ? 700 : 400;
                         color: root.active-section == i ? Theme.surface : Theme.on-surface;
