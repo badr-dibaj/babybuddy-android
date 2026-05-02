@@ -27,7 +27,15 @@ jobs:
       - name: Build Rust .so
         run: |
           cargo ndk -t aarch64-linux-android -t armv7-linux-androideabi -t x86_64-linux-android \
-            -o android/app/src/main/jniLibs build --package babybuddy --features android --release
+            -o android/app/src/main/jniLibs build --package babybuddy --features android --release \
+            2>&1 | tee /tmp/build.log; BUILD_EXIT=${PIPESTATUS[0]}
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "## :x: Build Rust .so FAILED" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            grep -E "^error|^\s+-->" /tmp/build.log | head -60 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit $BUILD_EXIT
+          fi
       - name: Assemble APK
         working-directory: android
         run: gradle assembleDebug --no-daemon
