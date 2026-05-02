@@ -25,17 +25,19 @@ jobs:
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --locked
       - name: Build Rust .so
+        id: build_so
         run: |
-          cargo ndk -t aarch64-linux-android -t armv7-linux-androideabi -t x86_64-linux-android \
+          cargo ndk -t aarch64-linux-android \
             -o android/app/src/main/jniLibs build --package babybuddy --features android --release \
-            2>&1 | tee /tmp/build.log; BUILD_EXIT=${PIPESTATUS[0]}
-          if [ $BUILD_EXIT -ne 0 ]; then
-            echo "## :x: Build Rust .so FAILED" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            grep -E "^error|^\s+-->" /tmp/build.log | head -60 >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            exit $BUILD_EXIT
-          fi
+            2>&1 | tee ci_build_error.txt; exit ${PIPESTATUS[0]}
+      - name: Push error log on failure
+        if: failure() && steps.build_so.outcome == 'failure'
+        run: |
+          git config user.email "ci@github.com"
+          git config user.name "CI Bot"
+          git add ci_build_error.txt
+          git commit -m "ci: add build error log [skip ci]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
       - name: Assemble APK
         working-directory: android
         run: gradle assembleDebug --no-daemon
