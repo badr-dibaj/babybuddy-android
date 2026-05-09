@@ -360,7 +360,6 @@ component BottomNavItem inherits TouchArea {
     in property <string> label: "";
     in property <bool> selected: false;
 
-    width: 80px;
     height: 72px;
 
     VerticalLayout {
@@ -411,7 +410,6 @@ component BottomNavBar inherits Rectangle {
     drop-shadow-color: Theme.card-shadow;
 
     HorizontalLayout {
-        alignment: space-around;
         padding-left: Theme.space-s;
         padding-right: Theme.space-s;
 
@@ -1037,6 +1035,11 @@ component HomeScreen inherits Rectangle {
     in property <[FeedingData]> recent-feedings: [];
     in property <[DiaperData]> recent-diapers: [];
 
+    callback go-to-feedings();
+    callback go-to-diapers();
+    callback go-to-growth();
+    callback go-to-more();
+
     background: Theme.background;
 
     VerticalLayout {
@@ -1063,18 +1066,23 @@ component HomeScreen inherits Rectangle {
                 }
             }
 
-            // Baby avatar circle
-            Rectangle {
+            // Baby avatar circle — tap to go to More (add/manage babies)
+            TouchArea {
                 width: 52px;
                 height: 52px;
-                border-radius: 26px;
-                background: Theme.primary-container;
-                Text {
-                    text: babies.length > 0 ? babies[selected-baby-idx].name != "" ? "👶" : "?" : "?";
-                    font-size: 22px;
-                    color: Theme.primary;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
+                clicked => { root.go-to-more(); }
+                Rectangle {
+                    width: 52px;
+                    height: 52px;
+                    border-radius: 26px;
+                    background: Theme.primary-container;
+                    Text {
+                        text: babies.length > 0 ? babies[selected-baby-idx].name != "" ? "👶" : "?" : "?";
+                        font-size: 22px;
+                        color: Theme.primary;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
                 }
             }
         }
@@ -1142,6 +1150,7 @@ component HomeScreen inherits Rectangle {
                         color: Theme.on-surface-variant;
                     }
                 }
+                TouchArea { clicked => { root.go-to-feedings(); } }
             }
 
             Card {
@@ -1174,6 +1183,7 @@ component HomeScreen inherits Rectangle {
                         color: Theme.on-surface-variant;
                     }
                 }
+                TouchArea { clicked => { root.go-to-diapers(); } }
             }
         }
 
@@ -1267,6 +1277,7 @@ component HomeScreen inherits Rectangle {
 
 component FeedingScreen inherits Rectangle {
     in property <[FeedingData]> feedings: [];
+    in property <bool> has-baby: false;
     callback delete-feeding(string);
 
     background: Theme.background;
@@ -1282,7 +1293,22 @@ component FeedingScreen inherits Rectangle {
             color: Theme.on-surface;
         }
 
-        if feedings.length == 0 : Rectangle {
+        if !root.has-baby : Rectangle {
+            height: 60px;
+            border-radius: Theme.radius-m;
+            background: Theme.color-feeding.with-alpha(0.12);
+            VerticalLayout {
+                alignment: center;
+                Text {
+                    text: "👶  Add a baby first (More tab) to record feedings";
+                    font-size: Theme.label-m;
+                    color: Theme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        if feedings.length == 0 && root.has-baby : Rectangle {
             height: 200px;
             VerticalLayout {
                 alignment: center;
@@ -1362,6 +1388,7 @@ component FeedingScreen inherits Rectangle {
 
 component DiapersScreen inherits Rectangle {
     in property <[DiaperData]> diapers: [];
+    in property <bool> has-baby: false;
     callback delete-diaper(string);
 
     background: Theme.background;
@@ -1377,7 +1404,22 @@ component DiapersScreen inherits Rectangle {
             color: Theme.on-surface;
         }
 
-        if diapers.length == 0 : Rectangle {
+        if !root.has-baby : Rectangle {
+            height: 60px;
+            border-radius: Theme.radius-m;
+            background: Theme.color-diaper.with-alpha(0.12);
+            VerticalLayout {
+                alignment: center;
+                Text {
+                    text: "👶  Add a baby first (More tab) to record diapers";
+                    font-size: Theme.label-m;
+                    color: Theme.on-surface-variant;
+                    horizontal-alignment: center;
+                }
+            }
+        }
+
+        if diapers.length == 0 && root.has-baby : Rectangle {
             height: 200px;
             VerticalLayout {
                 alignment: center;
@@ -1902,12 +1944,17 @@ export component AppWindow inherits Window {
                     selected-baby-idx <=> root.selected-baby-idx;
                     recent-feedings: root.feedings;
                     recent-diapers: root.diapers;
+                    go-to-feedings => { root.active-tab = 1; }
+                    go-to-diapers  => { root.active-tab = 2; }
+                    go-to-growth   => { root.active-tab = 3; }
+                    go-to-more     => { root.active-tab = 4; }
                 }
 
                 // Feedings
                 if root.active-tab == 1 : FeedingScreen {
                     width: root.width;
                     feedings: root.feedings;
+                    has-baby: root.babies.length > 0;
                     delete-feeding(id) => { root.delete-feeding(id); }
                 }
 
@@ -1915,6 +1962,7 @@ export component AppWindow inherits Window {
                 if root.active-tab == 2 : DiapersScreen {
                     width: root.width;
                     diapers: root.diapers;
+                    has-baby: root.babies.length > 0;
                     delete-diaper(id) => { root.delete-diaper(id); }
                 }
 

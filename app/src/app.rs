@@ -393,6 +393,9 @@ pub fn run_app() {
     {
         let db = database.lock().unwrap();
         refresh_all(&ui, &db, 0);
+        if db.get_babies().unwrap_or_default().is_empty() {
+            ui.set_show_add_baby(true);
+        }
     }
     wire_callbacks(&ui, database);
     ui.run().expect("Slint run failed");
@@ -414,6 +417,9 @@ pub fn run_app_android(app: slint::android::AndroidApp) {
     {
         let db = database.lock().unwrap();
         refresh_all(&ui, &db, 0);
+        if db.get_babies().unwrap_or_default().is_empty() {
+            ui.set_show_add_baby(true);
+        }
     }
     wire_callbacks(&ui, database);
     ui.run().expect("Slint run failed");
