@@ -1032,7 +1032,7 @@ component AddBabySheet inherits Rectangle {
 
 component HomeScreen inherits Rectangle {
     in property <[BabyData]> babies: [];
-    in property <SummaryData> summary: {};
+    in property <SummaryData> summary: { feedings-today: "", diapers-today: "", last-feeding: "", last-diaper: "", latest-weight: "", latest-height: "" };
     in-out property <int> selected-baby-idx: 0;
     in property <[FeedingData]> recent-feedings: [];
     in property <[DiaperData]> recent-diapers: [];
@@ -1832,7 +1832,7 @@ export component AppWindow inherits Window {
 
     // Data properties
     in property <[BabyData]> babies: [];
-    in property <SummaryData> summary: {};
+    in property <SummaryData> summary: { feedings-today: "", diapers-today: "", last-feeding: "", last-diaper: "", latest-weight: "", latest-height: "" };
     in property <[FeedingData]> feedings: [];
     in property <[DiaperData]> diapers: [];
     in property <[WeightData]> weights: [];
